@@ -1,0 +1,69 @@
+THere two steps you need to be done : 
+Step 1: Paste this code on INtellij Idea, this bellow code should be on your main file:
+import java.net.URL;
+import java.net.HttpURLConnection;
+import java.nio.charset.StandardCharsets;
+import java.util.Scanner;
+import java.net.URLEncoder;
+import java.io.IOException;
+import java.math.BigDecimal;
+import org.json.JSONObject;
+
+public class WeatherApp {
+
+    public static void main(String[] args) {
+        String apiKey = "YOUR API KEY"; //Create an account on openweatehrmap and take that api and paste here
+        String city = "Dhaka"; //You can coose any place you want
+
+        try {
+            String encodedCity = URLEncoder.encode(city, StandardCharsets.UTF_8);
+            URL url = new URL("http://api.openweathermap.org/data/2.5/weather?q=" + encodedCity + "&appid=" + apiKey + "&units=metric");
+
+            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+            conn.setRequestMethod("GET");
+
+            Scanner scanner = new Scanner(conn.getInputStream());
+            String response = scanner.useDelimiter("\\A").next();
+            scanner.close();
+
+            JSONObject jsonObject = new JSONObject(response);
+            JSONObject mainObject = jsonObject.getJSONObject("main");
+
+            BigDecimal temperatureBigDecimal = mainObject.getBigDecimal("temp");
+            String temperatureString = temperatureBigDecimal.toString();
+
+            int humidityInt = mainObject.getInt("humidity");
+            String humidityString = Integer.toString(humidityInt);
+
+            String description = jsonObject.getJSONArray("weather").getJSONObject(0).getString("description");
+
+
+            System.out.println("Weather in " + city + ":");
+            System.out.println("Temperature: " + temperatureString + " °C");
+            System.out.println("Description: " + description);
+            System.out.println("Humidity: " + humidityString + "%");
+
+        } catch (IOException e) {
+            if (e.getMessage().contains("Server returned HTTP response code: 401")) {
+                System.out.println("Error: Unauthorized - Please check your API key.");
+            } else {
+                System.out.println("Error: " + e.getMessage());
+            }
+        } catch (Exception e) {
+            System.out.println("Error: " + e.getMessage());
+        }
+    }
+}
+
+
+
+Step 2: You need to edit your pom.xml file as well, just add these dependencies: 
+<dependencies>
+        <dependency>
+            <groupId>org.json</groupId>
+            <artifactId>json</artifactId>
+            <version>20230227</version>
+        </dependency>
+    </dependencies>
+
+Now you are good to go, run your project 
